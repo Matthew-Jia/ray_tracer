@@ -1,11 +1,18 @@
 #pragma once
 
 #include "hittable.hpp"
+#include "material.hpp"
 #include "vec3.hpp"
+
+#include <memory>
+
+using std::shared_ptr;
+using std::make_shared;
 
 class [[nodiscard]] sphere : public hittable {
 public:
-	sphere(const point3 &center, double radius) : center_(center), radius_(std::fmax(0, radius)) {}
+	sphere(const point3 &center, double radius, shared_ptr<material> mat)
+    : center_{center}, radius_{std::fmax(0, radius)}, mat_{mat} {}
 
 	[[nodiscard]] bool hit(const ray &r, interval ray_t, hit_record &rec) const override
 	{
@@ -30,7 +37,8 @@ public:
 		rec.t = root;
 		rec.p = r.at(rec.t);
 		vec3 outward_normal = (rec.p - center_) / radius_;
-		rec.normal = (rec.p - center_) / radius_;
+    rec.set_face_normal(r, outward_normal);
+		rec.mat = mat_;
 
 		return true;
 	}
@@ -39,4 +47,5 @@ public:
 private:
 	point3 center_;
 	double radius_;
+	shared_ptr<material> mat_;
 };

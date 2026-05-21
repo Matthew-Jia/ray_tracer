@@ -1,12 +1,20 @@
 #pragma once
 
-#include "ray.hpp"
 #include "interval.hpp"
+#include "ray.hpp"
+
+#include <memory>
+
+using std::make_shared;
+using std::shared_ptr;
+
+class material;
 
 class [[nodiscard]] hit_record {
 public:
 	point3 p;
 	vec3 normal;
+	shared_ptr<material> mat;
 	double t;
 	bool front_face;
 

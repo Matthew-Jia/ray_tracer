@@ -6,7 +6,7 @@ class [[nodiscard]] ray {
 public:
 
 	ray() {}
-	ray(const point3& orig, const vec3 &dir) : orig_(orig), dir_(dir) {}
+	ray(const point3& orig, const vec3 &dir) : orig_{orig}, dir_{dir} {}
 
 	const point3& origin() const noexcept { return orig_; }
 	const vec3& direction() const noexcept { return dir_; }

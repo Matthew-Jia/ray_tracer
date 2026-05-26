@@ -1,5 +1,7 @@
 target_sources(
 	MathLib INTERFACE
+    aabb.hpp
+    bvh_node.hpp
     camera.hpp
     color.hpp
     common.hpp

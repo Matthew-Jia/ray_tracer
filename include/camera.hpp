@@ -1,3 +1,4 @@
+#pragma once
 
 #include "color.hpp"
 #include "common.hpp"
@@ -110,8 +111,9 @@ class [[nodiscard]] camera {
 			
 			auto ray_origin = (defocus_angle == 0) ? center_ : defocus_disk_sample();
 			auto ray_dir = pixel_sample - ray_origin;
+      auto ray_time = random_double();
 			
-			return ray(ray_origin, ray_dir);
+			return ray(ray_origin, ray_dir, ray_time);
 		}
 
 		vec3 sample_square() const { return vec3{random_double() - 0.5, random_double() - 0.5, 0}; }

@@ -1,4 +1,5 @@
 
+#include "bvh_node.hpp"
 #include "common.hpp"
 #include "hittable_list.hpp"
 #include "material.hpp"
@@ -14,6 +15,7 @@ using std::make_shared;
 int main()
 {
   hittable_list world;
+  bvh_node bvh(world);
 
   auto ground_material = make_shared<lambertian>(color{0.5, 0.5, 0.5});
   world.add(make_shared<sphere>(point3{0, -1000, 0}, 1000, ground_material));
@@ -33,19 +35,21 @@ int main()
         {
           auto albedo = color::random() * color::random();
           sphere_material = make_shared<lambertian>(albedo);
+          auto center2 = center + vec3(0, random_double(0, 0.5), 0);
+          world.add(make_shared<sphere>(center, center2, 0.2, sphere_material));
         } 
         else if (choose_mat < 0.95)
         {
           auto albedo = color::random(0.5, 1);
           auto fuzz = random_double(0, 0.5);
           sphere_material = make_shared<metal>(albedo, fuzz);
+          world.add(make_shared<sphere>(center, 0.2, sphere_material));
         }
         else
         {
           sphere_material = make_shared<dielectric>(1.5);
+          world.add(make_shared<sphere>(center, 0.2, sphere_material));
         }
-
-        world.add(make_shared<sphere>(center, 0.2, sphere_material));
       }
     }
   }
@@ -62,7 +66,7 @@ int main()
   camera cam;
 
   cam.aspect_ratio      = 16.0 / 9.0;
-  cam.image_width       = 1200;
+  cam.image_width       = 400;
   cam.samples_per_pixel = 10;
   cam.max_depth         = 50;
 

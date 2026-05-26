@@ -18,5 +18,8 @@ const double pi = 3.1415926535897932385;
 
 [[nodiscard]] inline double random_double(double min, double max) { return min + (max-min)*random_double(); }
 
-	
+[[nodiscard]] inline int random_int(int min, int max) 
+{
+	return (int)random_double(min, max + 1);
+}
 

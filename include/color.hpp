@@ -9,7 +9,6 @@ using color = vec3;
 
 [[nodiscard]] inline double linear_to_gamma(double linear_component)
 {
-	// TODO: Figure out why this isn't work. use cmake debugger to do this.
 	assert((interval{0, 1}).contains(linear_component));
 
 	if (linear_component == 0)

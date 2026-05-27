@@ -13,7 +13,7 @@ class [[nodiscard]] hittable_list : public hittable {
   public:
     std::vector<shared_ptr<hittable>> objects;
 
-    explicit hittable_list() {}
+    hittable_list() {}
     explicit hittable_list(shared_ptr<hittable> object) { add(object); }
 
     void clear() { objects.clear(); }

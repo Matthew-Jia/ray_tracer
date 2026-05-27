@@ -8,13 +8,13 @@
 class [[nodiscard]] vec3 {
 public:
 	union {
-		double data[3];
+    std::array<double, 3> data;
 		struct { double x, y, z; };
 		struct { double r, g, b; };
 	};
 
-	explicit vec3() {};
-	explicit vec3(double e0, double e1, double e2) : data{e0, e1, e2} {}
+	vec3() {};
+	vec3(double e0, double e1, double e2) : data{e0, e1, e2} {}
 
 	vec3 operator-() const { return vec3{-data[0], -data[1], -data[2]}; }
 	double operator[](const int i) const { return data[i]; }

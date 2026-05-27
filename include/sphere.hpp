@@ -12,14 +12,14 @@ using std::make_shared;
 
 class [[nodiscard]] sphere : public hittable {
 public:
-	explicit sphere(const point3 &static_center, double radius, shared_ptr<material> mat)
+	sphere(const point3 &static_center, double radius, shared_ptr<material> mat)
     : center_{static_center, vec3{0, 0, 0}}, radius_{std::fmax(0, radius)}, mat_{mat}
   {
     vec3 rvec{radius, radius, radius};
     bbox_ = aabb{static_center - rvec, static_center + rvec};
   }
 
-	explicit sphere(const point3 &center1, const point3 &center2, double radius, 
+	sphere(const point3 &center1, const point3 &center2, double radius, 
       shared_ptr<material> mat)
     : center_{center1, center2 - center1}, radius_{std::fmax(0, radius)}, mat_{mat}
   {

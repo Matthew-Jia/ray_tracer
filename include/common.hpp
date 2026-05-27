@@ -12,7 +12,7 @@ const double pi = 3.1415926535897932385;
 [[nodiscard]] inline double random_double() 
 {
 	static std::uniform_real_distribution<double> distribution(0.0, 1.0);
-	static std::mt19937 generator;
+	static std::mt19937 generator(42);
 	return distribution(generator);
 }
 

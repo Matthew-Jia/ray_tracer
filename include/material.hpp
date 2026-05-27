@@ -37,7 +37,7 @@ class [[nodiscard]] lambertian : public material {
 
 class [[nodiscard]] metal : public material {
 	public:
-		explicit metal(const color &albedo, double fuzz) : albedo_{albedo}, fuzz_{fuzz < 1 ? fuzz : 1} {}
+		metal(const color &albedo, double fuzz) : albedo_{albedo}, fuzz_{fuzz < 1 ? fuzz : 1} {}
 
 		[[nodiscard]] bool scatter(
 			const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered

@@ -7,6 +7,8 @@
 #include "sphere.hpp"
 #include "vec3.hpp"
 
+#include <chrono>
+#include <iostream>
 #include <memory>
 
 using std::shared_ptr;
@@ -15,7 +17,6 @@ using std::make_shared;
 int main()
 {
   hittable_list world;
-  bvh_node bvh(world);
 
   auto ground_material = make_shared<lambertian>(color{0.5, 0.5, 0.5});
   world.add(make_shared<sphere>(point3{0, -1000, 0}, 1000, ground_material));
@@ -63,6 +64,8 @@ int main()
   world.add(make_shared<sphere>(point3(-4, 1, 0), 1.0, material2));
   world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
 
+  world = hittable_list(make_shared<bvh_node>(world));
+
   camera cam;
 
   cam.aspect_ratio      = 16.0 / 9.0;
@@ -79,5 +82,11 @@ int main()
   cam.defocus_angle = 0.6;
   cam.focus_dist    = 10;
 
+  auto start = std::chrono::high_resolution_clock::now();
   cam.render(world);
+  auto end = std::chrono::high_resolution_clock::now();
+
+  std::chrono::duration<double, std::milli> elapsed = end - start;
+
+  std::clog << "Function ran for: " << elapsed.count() << " ms\n"; 
 }

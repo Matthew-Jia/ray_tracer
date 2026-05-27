@@ -6,9 +6,9 @@ class [[nodiscard]] interval {
 public:
 	double min, max;
 
-	explicit interval() : min{+infinity}, max{-infinity} {}
-	explicit interval(double min, double max) : min{min}, max{max} {}
-	explicit interval(const interval &i1, const interval &i2) :
+	interval() : min{+infinity}, max{-infinity} {}
+	interval(double min, double max) : min{min}, max{max} {}
+	interval(const interval &i1, const interval &i2) :
     min{std::fmin(i1.min, i2.min)}, max{std::fmax(i1.max, i2.max)} 
   {}
 

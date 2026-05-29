@@ -10,7 +10,9 @@ target_sources(
     interval.hpp
     material.hpp
     ray.hpp
+    rtw_stb_image.hpp
     sphere.hpp
+    texture.hpp
     vec3.hpp
 )
 

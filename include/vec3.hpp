@@ -8,7 +8,7 @@
 class [[nodiscard]] vec3 {
 public:
 	union {
-    std::array<double, 3> data;
+    double data[3]; // Must be raw array for type punning
 		struct { double x, y, z; };
 		struct { double r, g, b; };
 	};

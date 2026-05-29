@@ -2,7 +2,11 @@
 
 #include "color.hpp"
 #include "hittable.hpp"
+#include "texture.hpp"
 #include "vec3.hpp"
+
+#include <memory>
+
 
 class [[nodiscard]] material {
 	public:
@@ -15,7 +19,8 @@ class [[nodiscard]] material {
 
 class [[nodiscard]] lambertian : public material {
 	public:
-		explicit lambertian(const color &albedo) : albedo_{albedo} {}
+		explicit lambertian(const color &albedo) : tex_{std::make_shared<solid_color>(albedo)} {}
+		explicit lambertian(const std::shared_ptr<texture> &tex) : tex_{tex} {}
 
 		[[nodiscard]] bool scatter(
 			const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered
@@ -26,13 +31,13 @@ class [[nodiscard]] lambertian : public material {
 			if (scatter_direction.near_zero())
 				scatter_direction = rec.normal;
 
-			scattered = ray(rec.p, scatter_direction, r_in.time());
-			attenuation = albedo_;
+			scattered = ray{rec.p, scatter_direction, r_in.time()};
+			attenuation = tex_->value(rec.u, rec.v, rec.p);
 			return true;
 		}
 
 	private:
-		color albedo_;
+    std::shared_ptr<texture> tex_;
 };
 
 class [[nodiscard]] metal : public material {

@@ -72,6 +72,6 @@ class [[nodiscard]] aabb {
     interval z_;
 };
 
-const aabb aabb::empty    = aabb{interval::empty,    interval::empty,    interval::empty};
-const aabb aabb::universe = aabb{interval::universe, interval::universe, interval::universe};
+inline const aabb aabb::empty    = aabb{interval::empty,    interval::empty,    interval::empty};
+inline const aabb aabb::universe = aabb{interval::universe, interval::universe, interval::universe};
 

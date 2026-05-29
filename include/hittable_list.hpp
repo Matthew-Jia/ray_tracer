@@ -6,19 +6,16 @@
 #include <memory>
 #include <vector>
 
-using std::make_shared;
-using std::shared_ptr;
-
 class [[nodiscard]] hittable_list : public hittable {
   public:
-    std::vector<shared_ptr<hittable>> objects;
+    std::vector<std::shared_ptr<hittable>> objects;
 
     hittable_list() {}
-    explicit hittable_list(shared_ptr<hittable> object) { add(object); }
+    explicit hittable_list(std::shared_ptr<hittable> object) { add(object); }
 
     void clear() { objects.clear(); }
 
-    void add(shared_ptr<hittable> object)
+    void add(std::shared_ptr<hittable> object)
     {
       objects.push_back(object);
       bbox_ = aabb{bbox_, object->bounding_box()};

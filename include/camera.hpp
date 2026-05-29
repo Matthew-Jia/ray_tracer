@@ -7,6 +7,9 @@
 #include "ray.hpp"
 #include "vec3.hpp"
 
+#include <chrono>
+#include <iostream>
+
 class [[nodiscard]] camera {
 	public:
 		double	aspect_ratio			= 16.0 / 9.0;
@@ -40,6 +43,7 @@ class [[nodiscard]] camera {
 
 		void render (const hittable &world)
 		{
+      auto start = std::chrono::high_resolution_clock::now();
 			initialize();
 
 			std::cout << "P3\n" << image_width << ' ' << image_height_ << "\n255\n";
@@ -59,6 +63,9 @@ class [[nodiscard]] camera {
 				}
 			}
 			std::clog << "\rDone.\n";
+      auto end = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double, std::milli> elapsed = end - start;
+      std::clog << "Function ran for: " << elapsed.count() << " ms\n"; 
 		}
 		
 

@@ -6,17 +6,16 @@
 
 #include <memory>
 
-using std::make_shared;
-using std::shared_ptr;
-
 class material;
 
 class [[nodiscard]] hit_record {
 public:
 	point3 p;
 	vec3 normal;
-	shared_ptr<material> mat;
+  std::shared_ptr<material> mat;
 	double t;
+  double u;
+  double v;
 	bool front_face;
 
 	void set_face_normal(const ray &r, const vec3 &outward_normal)
@@ -29,7 +28,7 @@ public:
 
 class hittable {
 public:
-	virtual ~hittable() = default;
+	virtual ~hittable() = default; // makes destructor virtual
 	[[nodiscard]] virtual bool hit(const ray &r, interval ray_t, hit_record &rec) const = 0;
   virtual aabb bounding_box() const = 0;
 };

@@ -1,21 +1,17 @@
 #pragma once
 
 #include "aabb.hpp"
-#include "common.hpp"
 #include "hittable.hpp"
 #include "hittable_list.hpp"
 
 #include <span>
 #include <memory>
 
-using std::shared_ptr;
-using std::make_shared;
-
 class [[nodiscard]] bvh_node : public hittable {
   public:
     explicit bvh_node(hittable_list &list) : bvh_node(list.objects) {}
 
-    explicit bvh_node(std::span<shared_ptr<hittable>> objects)
+    explicit bvh_node(std::span<std::shared_ptr<hittable>> objects)
     {
       assert(!objects.empty());
       bbox_ = aabb::empty;
@@ -23,6 +19,8 @@ class [[nodiscard]] bvh_node : public hittable {
         bbox_ = aabb(bbox_, obj->bounding_box());
 
       int axis = bbox_.longest_axis();
+
+      // int axis = random_int(0,2);
 
       if (objects.size() == 1)
       {
@@ -41,9 +39,10 @@ class [[nodiscard]] bvh_node : public hittable {
 
         int mid = objects.size() / 2;
 
-        left_ = make_shared<bvh_node>(objects.subspan(0, mid));
-        right_ = make_shared<bvh_node>(objects.subspan(mid));
+        left_ = std::make_shared<bvh_node>(objects.subspan(0, mid));
+        right_ = std::make_shared<bvh_node>(objects.subspan(mid));
       }
+      // bbox_ = aabb(left_->bounding_box(), right_->bounding_box());
     }
 
     bool hit(const ray &r, interval ray_t, hit_record &rec) const override
@@ -60,13 +59,13 @@ class [[nodiscard]] bvh_node : public hittable {
     aabb bounding_box() const override { return bbox_; }
 
   private:
-    shared_ptr<hittable> left_;
-    shared_ptr<hittable> right_;
+    std::shared_ptr<hittable> left_;
+    std::shared_ptr<hittable> right_;
     aabb bbox_;
     
     // primitive as hell comparator
     [[nodiscard]] static bool box_compare(
-        const shared_ptr<hittable> a, const shared_ptr<hittable> b, int axis_index
+        const std::shared_ptr<hittable> a, const std::shared_ptr<hittable> b, int axis_index
     )
     {
       auto a_axis_interval = a->bounding_box().axis_interval(axis_index);

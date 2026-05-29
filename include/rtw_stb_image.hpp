@@ -13,6 +13,8 @@
 class rtw_image {
   public:
     rtw_image() {}
+
+    explicit
     rtw_image(const char *image_filename)
     {
       auto filename = std::string(image_filename);
@@ -28,7 +30,8 @@ class rtw_image {
       STBI_FREE(fdata_);
     }
 
-    [[nodiscard]] bool load(const std::string &filename)
+    [[nodiscard]]
+    bool load(const std::string &filename)
     {
       auto n = bytes_per_pixel_;
       fdata_ = stbi_loadf(filename.c_str(), &image_width_, &image_height_, &n, bytes_per_pixel_);
@@ -39,10 +42,14 @@ class rtw_image {
       return true;
     }
 
-    [[nodiscard]] int width() const { return (fdata_ == nullptr) ? 0 : image_width_; }
-    [[nodiscard]] int height() const { return (fdata_ == nullptr) ? 0 : image_height_; }
+    [[nodiscard]]
+    int width() const { return (fdata_ == nullptr) ? 0 : image_width_; }
 
-    [[nodiscard]] color pixel_data(int x, int y) const
+    [[nodiscard]]
+    int height() const { return (fdata_ == nullptr) ? 0 : image_height_; }
+
+    [[nodiscard]]
+    color pixel_data(int x, int y) const
     {
       assert(0 <= x && x <= image_width_);
       assert(0 <= y && y <= image_height_);
@@ -67,14 +74,16 @@ class rtw_image {
     int image_height_ = 0;
     int bytes_per_scanline_ = 0;
 
-    [[nodiscard]] static int clamp(int x, int low, int high)
+    [[nodiscard]] static
+    int clamp(int x, int low, int high)
     {
       if (x < low) return low;
       if (x < high) return x;
       return high - 1;
     }
 
-    [[nodiscard]] static unsigned char float_to_byte(float value)
+    [[nodiscard]] static
+    unsigned char float_to_byte(float value)
     {
       if (value <= 0.0)
         return 0;

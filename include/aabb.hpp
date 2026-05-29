@@ -8,13 +8,18 @@ class [[nodiscard]] aabb {
   public: 
     aabb() {}
     aabb(const interval &x, const interval &y, const interval &z)
-      : x_{x}, y_{y}, z_{z} {}
+      : x_{x}, y_{y}, z_{z}
+    {
+      pad_to_minimums();
+    }
 
     aabb(const point3 &p1, const point3 &p2)
     {
       x_ = (p1.x <= p2.x) ? interval{p1.x, p2.x} : interval{p2.x, p1.x};
       y_ = (p1.y <= p2.y) ? interval{p1.y, p2.y} : interval{p2.y, p1.y};
       z_ = (p1.z <= p2.z) ? interval{p1.z, p2.z} : interval{p2.z, p1.z};
+
+      pad_to_minimums();
     }
 
     aabb(const aabb &b1, const aabb &b2) : 
@@ -23,7 +28,8 @@ class [[nodiscard]] aabb {
       z_{b1.z_, b2.z_}
     {}
 
-    [[nodiscard]] const interval& axis_interval(int n) const
+    [[nodiscard]]
+    const interval& axis_interval(int n) const
     {
       assert(0 <= n && n <= 2);
       if (n == 0) return x_;
@@ -31,7 +37,8 @@ class [[nodiscard]] aabb {
       return z_;
     }
 
-    [[nodiscard]] bool hit(const ray &r, interval ray_t) const 
+    [[nodiscard]]
+    bool hit(const ray &r, interval ray_t) const 
     {
       const point3& ray_orig = r.origin();
       const vec3&   ray_dir  = r.direction();
@@ -56,7 +63,8 @@ class [[nodiscard]] aabb {
       return true;
     }
 
-    [[nodiscard]] int longest_axis() const 
+    [[nodiscard]]
+    int longest_axis() const 
     { 
       if (x_.size() > y_.size())
         return x_.size() > z_.size() ? 0 : 2;
@@ -70,6 +78,15 @@ class [[nodiscard]] aabb {
     interval x_;
     interval y_;
     interval z_;
+
+    void pad_to_minimums()
+    {
+      double delta = 0.0001;
+      if (x_.size() < delta) x_ = x_.expand(delta);
+      if (y_.size() < delta) y_ = y_.expand(delta);
+      if (z_.size() < delta) z_ = z_.expand(delta);
+
+    }
 };
 
 inline const aabb aabb::empty    = aabb{interval::empty,    interval::empty,    interval::empty};

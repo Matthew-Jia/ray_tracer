@@ -9,9 +9,11 @@
 
 class [[nodiscard]] bvh_node : public hittable {
   public:
-    explicit bvh_node(hittable_list &list) : bvh_node(list.objects) {}
+    explicit
+    bvh_node(hittable_list &list) : bvh_node(list.objects) {}
 
-    explicit bvh_node(std::span<std::shared_ptr<hittable>> objects)
+    explicit
+    bvh_node(std::span<std::shared_ptr<hittable>> objects)
     {
       assert(!objects.empty());
       bbox_ = aabb::empty;
@@ -64,7 +66,8 @@ class [[nodiscard]] bvh_node : public hittable {
     aabb bbox_;
     
     // primitive as hell comparator
-    [[nodiscard]] static bool box_compare(
+    [[nodiscard]]
+    static bool box_compare(
         const std::shared_ptr<hittable> a, const std::shared_ptr<hittable> b, int axis_index
     )
     {

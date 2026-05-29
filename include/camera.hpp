@@ -16,6 +16,7 @@ class [[nodiscard]] camera {
 		int			image_width				= 400;
 		int			samples_per_pixel = 10;
 		int			max_depth					= 10;
+    color   background;
     
     double  vfov      = 90;
     point3  lookfrom  = point3{0,0,0};
@@ -139,19 +140,19 @@ class [[nodiscard]] camera {
 				return color{0, 0, 0};
 
 			hit_record rec;
-			if (world.hit(r, interval{0.001, infinity}, rec))
-			{
-				ray scattered;
-				color attenuation;
-				if (rec.mat->scatter(r, rec, attenuation, scattered))
-					return attenuation * ray_color(scattered, depth-1, world);
+      
+			if (!world.hit(r, interval{0.001, infinity}, rec))
+        return background;
 
-				return color{0, 0, 0};
-			}
+      ray scattered;
+      color attenuation;
+      color color_from_emission = rec.mat->emmitted(rec.u, rec.v, rec.p);
 
-			vec3 unit_direction = unit_vector(r.direction());
-			auto a = (unit_direction.y + 1.0)/2;
-			return (1.0-a)*color{1.0, 1.0, 1.0} + a*color{0.5, 0.7, 1.0};
+      if (!rec.mat->scatter(r, rec, attenuation, scattered))
+        return color_from_emission;
+
+      color color_from_scatter = attenuation * ray_color(scattered, depth-1, world);
+			return color_from_emission + color_from_scatter;
 		}
 
 };

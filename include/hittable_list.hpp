@@ -11,7 +11,9 @@ class [[nodiscard]] hittable_list : public hittable {
     std::vector<std::shared_ptr<hittable>> objects;
 
     hittable_list() {}
-    explicit hittable_list(std::shared_ptr<hittable> object) { add(object); }
+
+    explicit 
+    hittable_list(std::shared_ptr<hittable> object) { add(object); }
 
     void clear() { objects.clear(); }
 
@@ -21,7 +23,7 @@ class [[nodiscard]] hittable_list : public hittable {
       bbox_ = aabb{bbox_, object->bounding_box()};
     }
 
-    [[nodiscard]] bool hit(const ray &r, interval ray_t, hit_record &rec) const override
+    bool hit(const ray &r, interval ray_t, hit_record &rec) const override
     {
       hit_record temp_rec;
       bool hit_anything = false;

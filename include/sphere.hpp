@@ -27,7 +27,7 @@ public:
   }
 
 
-	[[nodiscard]] bool hit(const ray &r, interval ray_t, hit_record &rec) const override
+	bool hit(const ray &r, interval ray_t, hit_record &rec) const override
 	{
     point3 current_center = center_.at(r.time());
 		vec3 oc = current_center - r.origin();
@@ -60,7 +60,8 @@ public:
 
   aabb bounding_box() const override { return bbox_; }
 
-  static void get_sphere_uv(const point3 &p, double &u, double &v)
+  static
+  void get_sphere_uv(const point3 &p, double &u, double &v)
   {
     // p: a given point on the sphere of radius one, centered at the origin.
     // u: returned value [0,1] of angle around the Y axis from X=-1.

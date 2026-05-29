@@ -2,6 +2,7 @@
 
 #include "color.hpp"
 #include "interval.hpp"
+#include "perlin.hpp"
 #include "rtw_stb_image.hpp"
 #include "vec3.hpp"
 
@@ -17,7 +18,8 @@ class texture {
 
 class solid_color : public texture {
   public:
-    explicit solid_color(const color &albedo) : albedo_(albedo) {}
+    explicit
+    solid_color(const color &albedo) : albedo_(albedo) {}
     solid_color(double red, double green, double blue) : solid_color{color{red, green, blue}} {}
 
     color value(double, double, const point3 &) const override { return albedo_; }
@@ -56,6 +58,8 @@ class checker_texture : public texture {
 class image_texture : public texture {
   public:
     image_texture() : image_{nullptr} {}
+
+    explicit
     image_texture(const char *filename) : image_{filename} {}
 
     color value(double u, double v, const point3 &) const override
@@ -74,6 +78,21 @@ class image_texture : public texture {
 
   private:
     rtw_image image_;
+};
+
+class noise_texture : public texture {
+  public:
+    explicit
+    noise_texture(double scale) : scale_{scale} {}
+    
+    color value(double, double, const point3 &p) const override
+    {
+      return color(.5, .5, .5) * (1 + std::sin(scale_ * p.z + 10 * noise_.turb(p, 7)));
+    }
+
+  private:
+    perlin noise_;
+    double scale_;
 };
 
 

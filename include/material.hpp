@@ -12,17 +12,31 @@ class [[nodiscard]] material {
 	public:
 		virtual ~material() = default;
 
-		virtual bool scatter(
-			const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered
-		) const = 0;
+		virtual
+    bool scatter(
+			const ray &, const hit_record &, color &, ray &
+		) const
+    {
+      return false;
+    }
+
+		virtual
+    color emmitted(double, double, const point3 &) const
+    {
+      return color{0, 0, 0};
+    }
 };
 
 class [[nodiscard]] lambertian : public material {
 	public:
-		explicit lambertian(const color &albedo) : tex_{std::make_shared<solid_color>(albedo)} {}
-		explicit lambertian(const std::shared_ptr<texture> &tex) : tex_{tex} {}
+		explicit
+    lambertian(const color &albedo) : tex_{std::make_shared<solid_color>(albedo)} {}
 
-		[[nodiscard]] bool scatter(
+		explicit
+    lambertian(const std::shared_ptr<texture> &tex) : tex_{tex} {}
+
+		[[nodiscard]]
+    bool scatter(
 			const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered
 		) const override
 		{
@@ -44,7 +58,8 @@ class [[nodiscard]] metal : public material {
 	public:
 		metal(const color &albedo, double fuzz) : albedo_{albedo}, fuzz_{fuzz < 1 ? fuzz : 1} {}
 
-		[[nodiscard]] bool scatter(
+		[[nodiscard]]
+    bool scatter(
 			const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered
 		) const override
 		{
@@ -62,9 +77,11 @@ class [[nodiscard]] metal : public material {
 
 class [[nodiscard]] dielectric : public material {
 	public:
-		explicit dielectric(double refraction_index) : refraction_index_{refraction_index} {}
+		explicit
+    dielectric(double refraction_index) : refraction_index_{refraction_index} {}
 
-		[[nodiscard]] bool scatter(
+		[[nodiscard]]
+    bool scatter(
 			const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered
 		) const override
 		{
@@ -90,7 +107,8 @@ class [[nodiscard]] dielectric : public material {
 	private:
 		double refraction_index_;
 
-    [[nodiscard]] static double reflectance(double cosine, double refraction_index_)
+    [[nodiscard]] static
+    double reflectance(double cosine, double refraction_index_)
     {
       auto r0 = (1-refraction_index_) / (1 + refraction_index_);
       r0 = r0 * r0;
@@ -98,4 +116,17 @@ class [[nodiscard]] dielectric : public material {
     }
 };
 
+class diffuse_light : public material {
+  public:
+    explicit
+    diffuse_light(std::shared_ptr<texture> tex) : tex_{tex} {}
+    diffuse_light(const color &emit) : tex_{std::make_shared<solid_color>(emit)} {}
 
+    color emmitted(double u, double v, const point3 &p) const override
+    {
+      return tex_->value(u, v, p);
+    }
+
+  private:
+      std::shared_ptr<texture> tex_;
+};

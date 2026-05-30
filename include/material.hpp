@@ -7,21 +7,16 @@
 
 #include <memory>
 
-
 class [[nodiscard]] material {
 	public:
 		virtual ~material() = default;
 
-		virtual
-    bool scatter(
-			const ray &, const hit_record &, color &, ray &
-		) const
+		[[nodiscard]] constexpr virtual bool scatter(const ray &, const hit_record &, color &, ray &) const noexcept
     {
       return false;
     }
 
-		virtual
-    color emmitted(double, double, const point3 &) const
+		constexpr virtual color emitted(double, double, const point3 &) const noexcept
     {
       return color{0, 0, 0};
     }
@@ -29,16 +24,14 @@ class [[nodiscard]] material {
 
 class [[nodiscard]] lambertian : public material {
 	public:
-		explicit
-    lambertian(const color &albedo) : tex_{std::make_shared<solid_color>(albedo)} {}
+		explicit constexpr lambertian(const color &albedo) : tex_{std::make_shared<solid_color>(albedo)} {}
+    
+    // TODO: maybe noexcept possible here
+		explicit constexpr lambertian(std::shared_ptr<texture> tex) noexcept : tex_{std::move(tex)} {}
 
-		explicit
-    lambertian(const std::shared_ptr<texture> &tex) : tex_{tex} {}
-
-		[[nodiscard]]
-    bool scatter(
+		[[nodiscard]] constexpr bool scatter(
 			const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered
-		) const override
+		) const noexcept override
 		{
 			auto scatter_direction = rec.normal + random_unit_vector();
 
@@ -56,12 +49,11 @@ class [[nodiscard]] lambertian : public material {
 
 class [[nodiscard]] metal : public material {
 	public:
-		metal(const color &albedo, double fuzz) : albedo_{albedo}, fuzz_{fuzz < 1 ? fuzz : 1} {}
+		constexpr metal(const color &albedo, double fuzz) noexcept : albedo_{albedo}, fuzz_{fuzz < 1 ? fuzz : 1} {}
 
-		[[nodiscard]]
-    bool scatter(
+		[[nodiscard]] constexpr bool scatter(
 			const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered
-		) const override
+		) const noexcept override
 		{
 			auto reflected = reflect(r_in.direction(), rec.normal);
       reflected = unit_vector(reflected) + (fuzz_ * random_unit_vector());
@@ -77,13 +69,11 @@ class [[nodiscard]] metal : public material {
 
 class [[nodiscard]] dielectric : public material {
 	public:
-		explicit
-    dielectric(double refraction_index) : refraction_index_{refraction_index} {}
+		explicit constexpr dielectric(double refraction_index) noexcept : refraction_index_{refraction_index} {}
 
-		[[nodiscard]]
-    bool scatter(
+		[[nodiscard]] constexpr bool scatter(
 			const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered
-		) const override
+		) const noexcept override
 		{
       attenuation = color{1.0, 1.0, 1.0};
       double ri = rec.front_face ? (1.0/refraction_index_) : refraction_index_;
@@ -107,8 +97,7 @@ class [[nodiscard]] dielectric : public material {
 	private:
 		double refraction_index_;
 
-    [[nodiscard]] static
-    double reflectance(double cosine, double refraction_index_)
+    [[nodiscard]] static constexpr double reflectance(double cosine, double refraction_index_) noexcept
     {
       auto r0 = (1-refraction_index_) / (1 + refraction_index_);
       r0 = r0 * r0;
@@ -118,11 +107,10 @@ class [[nodiscard]] dielectric : public material {
 
 class diffuse_light : public material {
   public:
-    explicit
-    diffuse_light(std::shared_ptr<texture> tex) : tex_{tex} {}
-    diffuse_light(const color &emit) : tex_{std::make_shared<solid_color>(emit)} {}
-
-    color emmitted(double u, double v, const point3 &p) const override
+    explicit constexpr diffuse_light(std::shared_ptr<texture> tex) noexcept : tex_{std::move(tex)} {}
+    explicit constexpr diffuse_light(const color &emit) : tex_{std::make_shared<solid_color>(emit)} {}
+    
+    constexpr color emitted(double u, double v, const point3 &p) const noexcept override
     {
       return tex_->value(u, v, p);
     }

@@ -7,15 +7,16 @@
 #include "stb_image.h"
 
 #include <cassert>
+#include <cstddef>
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 
 class rtw_image {
   public:
-    rtw_image() {}
+    constexpr rtw_image() = default;
 
-    explicit
-    rtw_image(const char *image_filename)
+    explicit constexpr rtw_image(const char *image_filename) 
     {
       auto filename = std::string(image_filename);
 
@@ -26,12 +27,10 @@ class rtw_image {
 
     ~rtw_image()
     {
-      delete[] bdata_;
       STBI_FREE(fdata_);
     }
 
-    [[nodiscard]]
-    bool load(const std::string &filename)
+    [[nodiscard]] constexpr bool load(const std::string &filename)
     {
       auto n = bytes_per_pixel_;
       fdata_ = stbi_loadf(filename.c_str(), &image_width_, &image_height_, &n, bytes_per_pixel_);
@@ -42,23 +41,19 @@ class rtw_image {
       return true;
     }
 
-    [[nodiscard]]
-    int width() const { return (fdata_ == nullptr) ? 0 : image_width_; }
+    [[nodiscard]] constexpr int width() const noexcept { return (fdata_ == nullptr) ? 0 : image_width_; }
+    [[nodiscard]] constexpr int height() const noexcept { return (fdata_ == nullptr) ? 0 : image_height_; }
 
-    [[nodiscard]]
-    int height() const { return (fdata_ == nullptr) ? 0 : image_height_; }
-
-    [[nodiscard]]
-    color pixel_data(int x, int y) const
+    [[nodiscard]] constexpr color pixel_data(int x, int y) const noexcept
     {
       assert(0 <= x && x <= image_width_);
       assert(0 <= y && y <= image_height_);
 
-      static color magenta{ 255, 0, 255 };
+      static constexpr color magenta{ 255, 0, 255 };
 
       if (bdata_ == nullptr) return magenta;
 
-      const unsigned char *pixel = bdata_ + y*bytes_per_scanline_ + x*bytes_per_pixel_;
+      const unsigned char *pixel = bdata_.get() + static_cast<ptrdiff_t>(y*bytes_per_scanline_) + static_cast<ptrdiff_t>(x*bytes_per_pixel_);
       return color{
         static_cast<double>(pixel[0]),
         static_cast<double>(pixel[1]),
@@ -69,21 +64,19 @@ class rtw_image {
   private:
     const int bytes_per_pixel_ = 3;
     float *fdata_ = nullptr;
-    unsigned char *bdata_ = nullptr;
+    std::unique_ptr<unsigned char> bdata_ = nullptr;
     int image_width_ = 0;
     int image_height_ = 0;
     int bytes_per_scanline_ = 0;
 
-    [[nodiscard]] static
-    int clamp(int x, int low, int high)
+    [[nodiscard]] static constexpr int clamp(int x, int low, int high) noexcept
     {
       if (x < low) return low;
       if (x < high) return x;
       return high - 1;
     }
 
-    [[nodiscard]] static
-    unsigned char float_to_byte(float value)
+    [[nodiscard]] static constexpr unsigned char float_to_byte(float value) noexcept
     {
       if (value <= 0.0)
         return 0;
@@ -92,12 +85,12 @@ class rtw_image {
       return static_cast<unsigned char>(256*value);
     }
 
-    void convert_to_bytes()
+    constexpr void convert_to_bytes()
     {
       int total_bytes = image_width_ * image_height_ * bytes_per_pixel_;
-      bdata_ = new unsigned char[total_bytes];
+      bdata_ = std::make_unique<unsigned char>(total_bytes);
 
-      auto *bptr = bdata_;
+      auto *bptr = bdata_.get();
       auto *fptr = fdata_;
       for (auto i = 0; i < total_bytes; ++i, ++fptr, ++bptr)
         *bptr = float_to_byte(*fptr);

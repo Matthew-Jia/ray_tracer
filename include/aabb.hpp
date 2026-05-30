@@ -6,89 +6,101 @@
 
 class [[nodiscard]] aabb {
   public: 
-    aabb() {}
-    aabb(const interval &x, const interval &y, const interval &z)
-      : x_{x}, y_{y}, z_{z}
+    interval x;
+    interval y;
+    interval z;
+
+    constexpr aabb() noexcept = default;
+    constexpr aabb(const interval &x, const interval &y, const interval &z) noexcept
+      : x{x}, y{y}, z{z}
     {
       pad_to_minimums();
     }
 
-    aabb(const point3 &p1, const point3 &p2)
+    constexpr aabb(const point3 &p1, const point3 &p2) noexcept
     {
-      x_ = (p1.x <= p2.x) ? interval{p1.x, p2.x} : interval{p2.x, p1.x};
-      y_ = (p1.y <= p2.y) ? interval{p1.y, p2.y} : interval{p2.y, p1.y};
-      z_ = (p1.z <= p2.z) ? interval{p1.z, p2.z} : interval{p2.z, p1.z};
+      x = (p1.x <= p2.x) ? interval{p1.x, p2.x} : interval{p2.x, p1.x};
+      y = (p1.y <= p2.y) ? interval{p1.y, p2.y} : interval{p2.y, p1.y};
+      z = (p1.z <= p2.z) ? interval{p1.z, p2.z} : interval{p2.z, p1.z};
 
       pad_to_minimums();
     }
 
-    aabb(const aabb &b1, const aabb &b2) : 
-      x_{b1.x_, b2.x_},
-      y_{b1.y_, b2.y_},
-      z_{b1.z_, b2.z_}
+    constexpr aabb(const aabb &b1, const aabb &b2) noexcept
+      : x{b1.x, b2.x},
+        y{b1.y, b2.y},
+        z{b1.z, b2.z}
     {}
 
-    [[nodiscard]]
-    const interval& axis_interval(int n) const
+    [[nodiscard]] constexpr const interval& axis_interval(int n) const noexcept
     {
       assert(0 <= n && n <= 2);
-      if (n == 0) return x_;
-      if (n == 1) return y_;
-      return z_;
+      if (n == 0) return x;
+      if (n == 1) return y;
+      return z;
     }
 
-    [[nodiscard]]
-    bool hit(const ray &r, interval ray_t) const 
+    [[nodiscard]] constexpr bool hit(const ray &r, interval rayt) const noexcept
     {
-      const point3& ray_orig = r.origin();
-      const vec3&   ray_dir  = r.direction();
+      const point3& rayorig = r.origin();
+      const vec3&   raydir  = r.direction();
 
       for (int axis = 0; axis < 3; axis++) {
         const interval &ax = axis_interval(axis);
-        const double adinv = 1.0 / ray_dir[axis];
+        const double adinv = 1.0 / raydir[axis];
 
-        auto t0 = (ax.min - ray_orig[axis]) * adinv;
-        auto t1 = (ax.max - ray_orig[axis]) * adinv;
+        auto t0 = (ax.min - rayorig[axis]) * adinv;
+        auto t1 = (ax.max - rayorig[axis]) * adinv;
 
         if (t0 > t1) {
           std::swap(t0, t1);
         }
         
-        ray_t.min = std::fmax(t0, ray_t.min);
-        ray_t.max = std::fmin(t1, ray_t.max);
+        rayt.min = std::fmax(t0, rayt.min);
+        rayt.max = std::fmin(t1, rayt.max);
 
-        if (ray_t.max <= ray_t.min)
+        if (rayt.max <= rayt.min)
           return false;
       }
       return true;
     }
 
-    [[nodiscard]]
-    int longest_axis() const 
+    [[nodiscard]] constexpr int longest_axis() const noexcept
     { 
-      if (x_.size() > y_.size())
-        return x_.size() > z_.size() ? 0 : 2;
+      if (x.size() > y.size())
+        return x.size() > z.size() ? 0 : 2;
       else
-        return y_.size() > z_.size() ? 1 : 2;
+        return y.size() > z.size() ? 1 : 2;
     }
 
     static const aabb empty, universe;
 
   private: 
-    interval x_;
-    interval y_;
-    interval z_;
 
-    void pad_to_minimums()
+    constexpr void pad_to_minimums() noexcept
     {
       double delta = 0.0001;
-      if (x_.size() < delta) x_ = x_.expand(delta);
-      if (y_.size() < delta) y_ = y_.expand(delta);
-      if (z_.size() < delta) z_ = z_.expand(delta);
+      if (x.size() < delta) x = x.expand(delta);
+      if (y.size() < delta) y = y.expand(delta);
+      if (z.size() < delta) z = z.expand(delta);
 
     }
 };
 
 inline const aabb aabb::empty    = aabb{interval::empty,    interval::empty,    interval::empty};
 inline const aabb aabb::universe = aabb{interval::universe, interval::universe, interval::universe};
+
+inline constexpr aabb operator+(const aabb &bbox, const vec3 &offset) noexcept
+{ 
+  return aabb{
+    bbox.x + offset.x,
+    bbox.y + offset.y,
+    bbox.z + offset.z,
+  };
+}
+
+inline constexpr aabb operator+(const vec3 &offset, const aabb &bbox) noexcept
+{ 
+  return bbox + offset;
+}
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "timer.hpp"
 #include "color.hpp"
 #include "common.hpp"
 #include "hittable.hpp"
@@ -7,7 +8,6 @@
 #include "ray.hpp"
 #include "vec3.hpp"
 
-#include <chrono>
 #include <iostream>
 
 class [[nodiscard]] camera {
@@ -42,9 +42,10 @@ class [[nodiscard]] camera {
     double defocus_angle = 0;
     double focus_dist = 10;
 
-		void render (const hittable &world)
+		void render (const hittable &world) noexcept
 		{
-      auto start = std::chrono::high_resolution_clock::now();
+      timer t{};
+
 			initialize();
 
 			std::cout << "P3\n" << image_width << ' ' << image_height_ << "\n255\n";
@@ -63,10 +64,6 @@ class [[nodiscard]] camera {
 					write_color(std::cout, pixel_color / samples_per_pixel);
 				}
 			}
-			std::clog << "\rDone.\n";
-      auto end = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double, std::milli> elapsed = end - start;
-      std::clog << "Function ran for: " << elapsed.count() << " ms\n"; 
 		}
 		
 
@@ -80,7 +77,7 @@ class [[nodiscard]] camera {
     vec3    defocus_disk_u_;
     vec3    defocus_disk_v_;
 
-		void initialize()
+		constexpr void initialize() noexcept
 		{
 			image_height_ = int(image_width / aspect_ratio);
 			image_height_ = image_height_ < 1 ? 1 : image_height_;
@@ -110,7 +107,7 @@ class [[nodiscard]] camera {
       defocus_disk_v_ = defocus_radius * v_;
 		}
 
-		ray get_ray(int i, int j) const
+		constexpr ray get_ray(int i, int j) const noexcept
 		{
 			auto offset = sample_square();
 			auto pixel_sample = pixel00_loc_
@@ -121,18 +118,18 @@ class [[nodiscard]] camera {
 			auto ray_dir = pixel_sample - ray_origin;
       auto ray_time = random_double();
 			
-			return ray(ray_origin, ray_dir, ray_time);
+			return ray{ray_origin, ray_dir, ray_time};
 		}
 
-		vec3 sample_square() const { return vec3{random_double() - 0.5, random_double() - 0.5, 0}; }
+		constexpr vec3 sample_square() const noexcept { return vec3{random_double() - 0.5, random_double() - 0.5, 0}; }
 
-    point3 defocus_disk_sample() const
+    constexpr point3 defocus_disk_sample() const noexcept
     {
       auto p = random_in_unit_disk();
       return center_ + (p[0] * defocus_disk_u_) + (p[1] * defocus_disk_v_);
     }
 
-		color ray_color(const ray &r, int depth, const hittable &world) const
+		constexpr color ray_color(const ray &r, int depth, const hittable &world) const noexcept
 		{
 			assert(depth >= 0);
 
@@ -146,7 +143,7 @@ class [[nodiscard]] camera {
 
       ray scattered;
       color attenuation;
-      color color_from_emission = rec.mat->emmitted(rec.u, rec.v, rec.p);
+      color color_from_emission = rec.mat->emitted(rec.u, rec.v, rec.p);
 
       if (!rec.mat->scatter(r, rec, attenuation, scattered))
         return color_from_emission;

@@ -1,0 +1,17 @@
+Checks: >
+  clang-analyzer-*,
+  bugprone-*,
+  performance-*,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  -bugprone-easily-swappable-parameters,
+  -modernize-use-nodiscard
+
+WarningsAsErrors: ''
+
+HeaderFilterRegex: '.*'
+ExcludeHeaderFilterRegex: '.*/external/.*'
+
+CheckOptions:
+  bugprone-unused-local-non-trivial-variable.IncludeTypes: '.*'
+  bugprone-unused-local-non-trivial-variable.ExcludeTypes: '.*timer.*'

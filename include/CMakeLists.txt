@@ -9,10 +9,13 @@ target_sources(
     hittable_list.hpp
     interval.hpp
     material.hpp
+    perlin.hpp
+    quad.hpp
     ray.hpp
     rtw_stb_image.hpp
     sphere.hpp
     texture.hpp
+    timer.hpp
     vec3.hpp
 )
 

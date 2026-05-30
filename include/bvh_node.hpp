@@ -4,16 +4,16 @@
 #include "hittable.hpp"
 #include "hittable_list.hpp"
 
-#include <span>
+
+#include <algorithm>
 #include <memory>
+#include <span>
 
 class [[nodiscard]] bvh_node : public hittable {
   public:
-    explicit
-    bvh_node(hittable_list &list) : bvh_node(list.objects) {}
+    explicit constexpr bvh_node(hittable_list &list) : bvh_node(list.objects) {}
 
-    explicit
-    bvh_node(std::span<std::shared_ptr<hittable>> objects)
+    explicit constexpr bvh_node(std::span<std::shared_ptr<hittable>> objects)
     {
       assert(!objects.empty());
       bbox_ = aabb::empty;
@@ -21,8 +21,6 @@ class [[nodiscard]] bvh_node : public hittable {
         bbox_ = aabb(bbox_, obj->bounding_box());
 
       int axis = bbox_.longest_axis();
-
-      // int axis = random_int(0,2);
 
       if (objects.size() == 1)
       {
@@ -35,19 +33,18 @@ class [[nodiscard]] bvh_node : public hittable {
       }
       else
       {
-        std::sort(objects.begin(), objects.end(), [&axis](const auto &a, const auto &b){
-          return box_compare(a, b, axis);
+        std::ranges::sort(objects, {}, [axis](const auto &obj){
+          return obj->bounding_box().axis_interval(axis).min;
         });
 
-        int mid = objects.size() / 2;
+        size_t mid = objects.size() / 2;
 
         left_ = std::make_shared<bvh_node>(objects.subspan(0, mid));
         right_ = std::make_shared<bvh_node>(objects.subspan(mid));
       }
-      // bbox_ = aabb(left_->bounding_box(), right_->bounding_box());
     }
 
-    bool hit(const ray &r, interval ray_t, hit_record &rec) const override
+    constexpr bool hit(const ray &r, interval ray_t, hit_record &rec) const noexcept override
     {
       if (!bbox_.hit(r, ray_t))
         return false;
@@ -58,22 +55,11 @@ class [[nodiscard]] bvh_node : public hittable {
       return hit_left || hit_right;
     }
 
-    aabb bounding_box() const override { return bbox_; }
+    constexpr aabb bounding_box() const noexcept override { return bbox_; }
 
   private:
     std::shared_ptr<hittable> left_;
     std::shared_ptr<hittable> right_;
     aabb bbox_;
-    
-    // primitive as hell comparator
-    [[nodiscard]]
-    static bool box_compare(
-        const std::shared_ptr<hittable> a, const std::shared_ptr<hittable> b, int axis_index
-    )
-    {
-      auto a_axis_interval = a->bounding_box().axis_interval(axis_index);
-      auto b_axis_interval = b->bounding_box().axis_interval(axis_index);
-      return a_axis_interval.min < b_axis_interval.min;
-    }
 };
 

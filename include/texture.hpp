@@ -9,36 +9,35 @@
 #include <cassert>
 #include <memory>
 
-class texture {
+class [[nodiscard]] texture {
   public:
     virtual ~texture() = default;
-
-    virtual color value(double u, double v, const point3 &p) const = 0;
+    constexpr virtual color value(double u, double v, const point3 &p) const noexcept = 0;
 };
 
-class solid_color : public texture {
+class [[nodiscard]] solid_color : public texture {
   public:
-    explicit
-    solid_color(const color &albedo) : albedo_(albedo) {}
-    solid_color(double red, double green, double blue) : solid_color{color{red, green, blue}} {}
+    explicit constexpr solid_color(const color &albedo) noexcept : albedo_(albedo) {}
 
-    color value(double, double, const point3 &) const override { return albedo_; }
+    constexpr solid_color(double red, double green, double blue) noexcept : solid_color{color{red, green, blue}} {}
+
+    constexpr color value(double, double, const point3 &) const noexcept override { return albedo_; }
 
   private:
     color albedo_;
 };
 
-class checker_texture : public texture {
+class [[nodiscard]] checker_texture : public texture {
   public:
-    checker_texture(double scale, std::shared_ptr<texture> even, std::shared_ptr<texture> odd)
-      : inv_scale_{1.0/scale}, even_{even}, odd_{odd}
+    constexpr checker_texture(double scale, std::shared_ptr<texture> even, std::shared_ptr<texture> odd) noexcept
+      : inv_scale_{1.0/scale}, even_{std::move(even)}, odd_{std::move(odd)}
     {}
 
-    checker_texture(double scale, const color &color1, const color &color2)
+    constexpr checker_texture(double scale, const color &color1, const color &color2)
       : checker_texture{scale, std::make_shared<solid_color>(color1), std::make_shared<solid_color>(color2)}
     {}
 
-    color value(double u, double v, const point3 &p) const override
+    constexpr color value(double u, double v, const point3 &p) const noexcept override
     {
       auto xInt = int(std::floor(inv_scale_ * p.x));
       auto yInt = int(std::floor(inv_scale_ * p.y));
@@ -55,14 +54,13 @@ class checker_texture : public texture {
     std::shared_ptr<texture> odd_;
 };
 
-class image_texture : public texture {
+class [[nodiscard]] image_texture : public texture {
   public:
-    image_texture() : image_{nullptr} {}
+    constexpr image_texture() : image_{nullptr} {}
 
-    explicit
-    image_texture(const char *filename) : image_{filename} {}
+    explicit constexpr image_texture(const char *filename) : image_{filename} {}
 
-    color value(double u, double v, const point3 &) const override
+    constexpr color value(double u, double v, const point3 &) const noexcept override
     {
       if (image_.height() == 0) return color{0, 1, 1};
 
@@ -80,12 +78,11 @@ class image_texture : public texture {
     rtw_image image_;
 };
 
-class noise_texture : public texture {
+class [[nodiscard]] noise_texture : public texture {
   public:
-    explicit
-    noise_texture(double scale) : scale_{scale} {}
+    explicit constexpr noise_texture(double scale) noexcept : scale_{scale} {}
     
-    color value(double, double, const point3 &p) const override
+    constexpr color value(double, double, const point3 &p) const noexcept override
     {
       return color(.5, .5, .5) * (1 + std::sin(scale_ * p.z + 10 * noise_.turb(p, 7)));
     }

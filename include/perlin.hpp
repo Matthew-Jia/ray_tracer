@@ -2,21 +2,23 @@
 
 #include "common.hpp"
 #include "vec3.hpp"
+#include <array>
+
+using corner_gradients = std::array<std::array<std::array<vec3, 2>, 2>, 2>;
 
 class perlin {
   public:
-    perlin() 
+    constexpr perlin() noexcept
     {
-      for (int i = 0; i < point_count_; ++i)
-        randvec_[i] = unit_vector(vec3::random(-1,1));
+      for (auto &i : randvec_) 
+        i = unit_vector(vec3::random(-1,1));
 
       perlin_generate_perm(perm_x_);
       perlin_generate_perm(perm_y_);
       perlin_generate_perm(perm_z_);
     }
 
-    [[nodiscard]]
-    double noise(const point3 &p) const
+    [[nodiscard]] constexpr double noise(const point3 &p) const noexcept
     {
       auto u = p.x - std::floor(p.x);
       auto v = p.y - std::floor(p.y);
@@ -26,7 +28,7 @@ class perlin {
       auto j = int(std::floor(p.y));
       auto k = int(std::floor(p.z));
 
-      vec3 c[2][2][2];
+      corner_gradients c;
 
       for (int di = 0; di < 2; ++di)
         for (int dj = 0; dj < 2; ++dj)
@@ -40,8 +42,7 @@ class perlin {
       return perlin_interp(c, u, v, w);
     }
 
-    [[nodiscard]]
-    double turb(const point3 &p, int depth) const
+    [[nodiscard]] constexpr double turb(const point3 &p, int depth) const noexcept
     {
       auto accum = 0.0;
       auto temp_p = p;
@@ -57,37 +58,33 @@ class perlin {
       return std::fabs(accum);
     }
 
-
   private:
-      static const int point_count_ = 256;
-      vec3 randvec_[point_count_];
-      int perm_x_[point_count_];
-      int perm_y_[point_count_];
-      int perm_z_[point_count_];
+      static constexpr int point_count_ = 256;
+      std::array<vec3, point_count_> randvec_;
+      std::array<int, point_count_> perm_x_;
+      std::array<int, point_count_> perm_y_;
+      std::array<int, point_count_> perm_z_;
 
-      static
-      void perlin_generate_perm(int *p)
+      static constexpr void perlin_generate_perm(std::array<int, point_count_> &p) noexcept
       {
-        for (int i = 0; i < point_count_; ++i)
-          p[i] = i;
+        for (size_t i = 0; i < p.size(); ++i)
+          p[i] = (int)i;
 
-        permute(p, point_count_);
+        permute(p);
       }
 
-      static
-      void permute(int *p, int n)
+      static constexpr void permute(std::array<int, point_count_> &p) noexcept
       {
-        for (int i = n - 1; i > 0; --i)
+        for (size_t i = p.size() - 1; i-- > 0;)
         {
-          int target = random_int(0, i);
+          int target = random_int(0, (int)i);
           int tmp = p[i];
           p[i] = p[target];
           p[target] = tmp;
         }
       }
 
-      [[nodiscard]] static
-      double perlin_interp(const vec3 c[2][2][2], double u, double v, double w)
+      [[nodiscard]] static constexpr double perlin_interp(corner_gradients c, double u, double v, double w) noexcept
       {
         auto uu = u*u*(3-2*u);
         auto vv = v*v*(3-2*v);

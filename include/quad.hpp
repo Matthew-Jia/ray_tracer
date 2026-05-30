@@ -10,8 +10,8 @@
 
 class quad : public hittable {
   public:
-    quad(const point3 &Q, const vec3 &u, const vec3 &v, std::shared_ptr<material> mat)
-      : Q_{Q}, u_{u}, v_{v}, mat_{mat}
+    constexpr quad(const point3 &Q, const vec3 &u, const vec3 &v, std::shared_ptr<material> mat) noexcept
+      : Q_{Q}, u_{u}, v_{v}, mat_{std::move(mat)}
     {
       auto n = cross(u, v);
       normal_ = unit_vector(n);
@@ -21,8 +21,7 @@ class quad : public hittable {
       set_bounding_box();
     }
 
-    virtual
-    void set_bounding_box()
+    constexpr virtual void set_bounding_box() noexcept
     {
       // Computer the bouding box of all four vertices
       auto bbox_diagonal1 = aabb{Q_, Q_+u_+v_};
@@ -30,9 +29,9 @@ class quad : public hittable {
       bbox_ = aabb{bbox_diagonal1, bbox_diagonal2};
     }
 
-    aabb bounding_box() const override { return bbox_; }
+    constexpr aabb bounding_box() const noexcept override { return bbox_; }
 
-    bool hit(const ray &r, interval ray_t, hit_record &rec) const override
+    constexpr bool hit(const ray &r, interval ray_t, hit_record &rec) const noexcept override
     {
       auto denom = dot(normal_, r.direction());
 
@@ -73,8 +72,7 @@ class quad : public hittable {
     double D_;
 };
 
-[[nodiscard]] inline 
-std::shared_ptr<hittable_list> box(const point3 &a, const point3 &b, std::shared_ptr<material> mat)
+[[nodiscard]] inline constexpr std::shared_ptr<hittable_list> box(const point3 &a, const point3 &b, std::shared_ptr<material> mat)
 {
   auto sides = std::make_shared<hittable_list>();
 
@@ -94,12 +92,12 @@ std::shared_ptr<hittable_list> box(const point3 &a, const point3 &b, std::shared
   auto dy = vec3{0, max.y - min.y, 0};
   auto dz = vec3{0, 0, max.z - min.z};
 
-  sides->add(make_shared<quad>(point3(min.x, min.y, max.z),  dx,  dy, mat)); // front
-  sides->add(make_shared<quad>(point3(max.x, min.y, max.z), -dz,  dy, mat)); // right
-  sides->add(make_shared<quad>(point3(max.x, min.y, min.z), -dx,  dy, mat)); // back
-  sides->add(make_shared<quad>(point3(min.x, min.y, min.z),  dz,  dy, mat)); // left
-  sides->add(make_shared<quad>(point3(min.x, max.y, max.z),  dx, -dz, mat)); // top
-  sides->add(make_shared<quad>(point3(min.x, min.y, min.z),  dx,  dz, mat)); // bottom
+  sides->add(std::make_shared<quad>(point3(min.x, min.y, max.z),  dx,  dy, mat)); // front
+  sides->add(std::make_shared<quad>(point3(max.x, min.y, max.z), -dz,  dy, mat)); // right
+  sides->add(std::make_shared<quad>(point3(max.x, min.y, min.z), -dx,  dy, mat)); // back
+  sides->add(std::make_shared<quad>(point3(min.x, min.y, min.z),  dz,  dy, mat)); // left
+  sides->add(std::make_shared<quad>(point3(min.x, max.y, max.z),  dx, -dz, mat)); // top
+  sides->add(std::make_shared<quad>(point3(min.x, min.y, min.z),  dx,  dz, mat)); // bottom
 
   return sides;
 }

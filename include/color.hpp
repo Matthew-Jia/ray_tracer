@@ -7,8 +7,7 @@
 
 using color = vec3;
 
-[[nodiscard]] inline
-double linear_to_gamma(double linear_component)
+[[nodiscard]] inline constexpr double linear_to_gamma(double linear_component) noexcept
 {
   if (linear_component > 0)
     return std::sqrt(linear_component);
@@ -16,8 +15,7 @@ double linear_to_gamma(double linear_component)
   return 0;
 }
 
-inline
-void write_color(std::ostream &out, const color &pixel_color)
+inline void write_color(std::ostream &out, const color &pixel_color) noexcept
 {
 	static const interval intensity(0.000, 0.999);
 

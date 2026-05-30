@@ -10,20 +10,19 @@ class [[nodiscard]] hittable_list : public hittable {
   public:
     std::vector<std::shared_ptr<hittable>> objects;
 
-    hittable_list() {}
+    constexpr hittable_list() noexcept = default;
 
-    explicit 
-    hittable_list(std::shared_ptr<hittable> object) { add(object); }
+    explicit constexpr hittable_list(std::shared_ptr<hittable> object) noexcept { add(std::move(object)); }
 
-    void clear() { objects.clear(); }
+    constexpr void clear() noexcept { objects.clear(); }
 
-    void add(std::shared_ptr<hittable> object)
+    constexpr void add(std::shared_ptr<hittable> object) noexcept
     {
-      objects.push_back(object);
       bbox_ = aabb{bbox_, object->bounding_box()};
+      objects.push_back(std::move(object));
     }
 
-    bool hit(const ray &r, interval ray_t, hit_record &rec) const override
+    [[nodiscard]] constexpr bool hit(const ray &r, interval ray_t, hit_record &rec) const noexcept override
     {
       hit_record temp_rec;
       bool hit_anything = false;
@@ -41,7 +40,7 @@ class [[nodiscard]] hittable_list : public hittable {
       return hit_anything;
     }
 
-    aabb bounding_box() const override { return bbox_; }
+    constexpr aabb bounding_box() const noexcept override { return bbox_; }
 
   private:
     aabb bbox_;

@@ -9,16 +9,15 @@
 
 class [[nodiscard]] sphere : public hittable {
 public:
-	sphere(const point3 &static_center, double radius, std::shared_ptr<material> mat)
-    : center_{static_center, vec3{0, 0, 0}}, radius_{std::fmax(0, radius)}, mat_{mat}
+	constexpr sphere(const point3 &static_center, double radius, std::shared_ptr<material> mat) noexcept
+    : center_{static_center, vec3{0, 0, 0}}, radius_{std::fmax(0, radius)}, mat_{std::move(mat)}
   {
     vec3 rvec{radius, radius, radius};
     bbox_ = aabb{static_center - rvec, static_center + rvec};
   }
 
-	sphere(const point3 &center1, const point3 &center2, double radius, 
-      std::shared_ptr<material> mat)
-    : center_{center1, center2 - center1}, radius_{std::fmax(0, radius)}, mat_{mat}
+	constexpr sphere(const point3 &center1, const point3 &center2, double radius, std::shared_ptr<material> mat) noexcept
+    : center_{center1, center2 - center1}, radius_{std::fmax(0, radius)}, mat_{std::move(mat)}
   {
     vec3 rvec{radius, radius, radius};
     aabb box1{center_.at(0) - rvec, center_.at(0) + rvec};
@@ -27,7 +26,7 @@ public:
   }
 
 
-	bool hit(const ray &r, interval ray_t, hit_record &rec) const override
+	constexpr bool hit(const ray &r, interval ray_t, hit_record &rec) const noexcept override
 	{
     point3 current_center = center_.at(r.time());
 		vec3 oc = current_center - r.origin();
@@ -58,10 +57,9 @@ public:
 		return true;
 	}
 
-  aabb bounding_box() const override { return bbox_; }
+  constexpr aabb bounding_box() const noexcept override { return bbox_; }
 
-  static
-  void get_sphere_uv(const point3 &p, double &u, double &v)
+  static constexpr void get_sphere_uv(const point3 &p, double &u, double &v) noexcept
   {
     // p: a given point on the sphere of radius one, centered at the origin.
     // u: returned value [0,1] of angle around the Y axis from X=-1.

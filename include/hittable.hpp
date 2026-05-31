@@ -125,15 +125,15 @@ class rotate_y : public hittable {
         return false;
 
       rec.p = point3{
-        (cos_theta_ * r.origin().x) + (sin_theta_ * r.origin().z),
-        r.origin().y,
-        (-sin_theta_ * r.origin().x) + (cos_theta_ * r.origin().z),
+        (cos_theta_ * rec.p.x) + (sin_theta_ * rec.p.z),
+        rec.p.y,
+        (-sin_theta_ * rec.p.x) + (cos_theta_ * rec.p.z),
       };
 
       rec.normal = vec3{
-        (cos_theta_ * r.origin().x) + (sin_theta_ * r.origin().z),
-        r.origin().y,
-        (-sin_theta_ * r.origin().x) + (cos_theta_ * r.origin().z),
+        (cos_theta_ * rec.normal.x) + (sin_theta_ * rec.normal.z),
+        rec.normal.y,
+        (-sin_theta_ * rec.normal.x) + (cos_theta_ * rec.normal.z),
       };
 
       return true;

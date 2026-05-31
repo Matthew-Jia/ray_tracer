@@ -52,7 +52,7 @@ class [[nodiscard]] camera {
 
 			for (int j = 0; j < image_height_; ++j)
 			{
-				std::clog << "\r Scanlines remaining: " << (image_height_ - j) << ' ' << std::flush;
+				std::clog << "\r Scanlines remaining: " << (image_height_ - j) << "\n";
 				for (int i = 0; i < image_width; ++i)
 				{
 					color pixel_color{0, 0, 0};
@@ -64,6 +64,7 @@ class [[nodiscard]] camera {
 					write_color(std::cout, pixel_color / samples_per_pixel);
 				}
 			}
+			std::clog << "\rDone.\n";
 		}
 		
 
@@ -134,7 +135,10 @@ class [[nodiscard]] camera {
 			assert(depth >= 0);
 
 			if (depth == 0) 
+      {
+        std::clog << "probably something wrong\n";
 				return color{0, 0, 0};
+      }
 
 			hit_record rec;
       
@@ -147,8 +151,9 @@ class [[nodiscard]] camera {
 
       if (!rec.mat->scatter(r, rec, attenuation, scattered))
         return color_from_emission;
-
-      color color_from_scatter = attenuation * ray_color(scattered, depth-1, world);
+      
+      auto rc = ray_color(scattered, depth-1, world);
+      color color_from_scatter = attenuation * rc;
 			return color_from_emission + color_from_scatter;
 		}
 
